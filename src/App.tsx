@@ -1,9 +1,9 @@
-import { magic } from "./magic";
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
+import { magic } from './magic';
 
 export default function App() {
-  const [email, setEmail] = useState("");
-  const [publicAddress, setPublicAddress] = useState("");
+  const [email, setEmail] = useState('');
+  const [publicAddress, setPublicAddress] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -12,28 +12,31 @@ export default function App() {
       if (isLoggedIn) {
         magic.user.getInfo().then((metadata: any) => {
           setIsLoading(false);
-          console.log("metadata", metadata);
+          console.log('metadata', metadata);
           setPublicAddress(metadata.publicAddress);
         });
       } else {
-        console.log("user not logged in");
+        console.log('user not logged in');
         setIsLoading(false);
       }
     });
   }, []);
 
   const getCosmosAddress = async () => {
-    magic.cosmos.changeAddress("cosmos").then((newAddress) => {
-      console.log('newAddress', newAddress);
-    }).catch((error: any) => {
-      console.log("Error", error);
-    });
-  }
+    magic.cosmos
+      .changeAddress('cosmos')
+      .then(newAddress => {
+        console.log('newAddress', newAddress);
+      })
+      .catch((error: any) => {
+        console.log('Error', error);
+      });
+  };
 
   const login = async () => {
     await magic.auth.loginWithEmailOTP({ email });
     const metadata = await magic.user.getInfo();
-    console.log("metadata", metadata);
+    console.log('metadata', metadata);
     setPublicAddress(metadata.publicAddress as string);
   };
 
@@ -41,14 +44,14 @@ export default function App() {
     try {
       const message = [
         {
-          typeUrl: "/cosmos.bank.v1beta1.MsgSend",
+          typeUrl: '/cosmos.bank.v1beta1.MsgSend',
           value: {
             fromAddress: publicAddress,
             toAddress: publicAddress,
             amount: [
               {
-                denom: "inj",
-                amount: "1",
+                denom: 'inj',
+                amount: '1',
               },
             ],
           },
@@ -56,13 +59,13 @@ export default function App() {
       ];
 
       const fee = {
-        amount: [{ denom: "inj", amount: "32000000000000" }],
-        gas: "200000",
+        amount: [{ denom: 'inj', amount: '32000000000000' }],
+        gas: '200000',
       };
       const res = await magic.cosmos.signAndBroadcast(message, fee);
-      console.log("res", res);
+      console.log('res', res);
     } catch (error) {
-      console.log("Error", error);
+      console.log('Error', error);
     }
   };
 
@@ -77,15 +80,18 @@ export default function App() {
           <p>{publicAddress}</p>
           <button onClick={sendTx}>Send Tx</button>
           <button onClick={getCosmosAddress}>Get cosmos address</button>
-          <button onClick={() => magic.user.logout()}>logout</button>
+          <button
+            onClick={() => {
+              magic.user.logout();
+              setPublicAddress('');
+            }}
+          >
+            logout
+          </button>
         </div>
       ) : (
         <>
-          <input
-            type="text"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
+          <input type="text" value={email} onChange={e => setEmail(e.target.value)} />
           <button onClick={login}>Login</button>
         </>
       )}
